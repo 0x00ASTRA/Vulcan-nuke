@@ -3,20 +3,11 @@ An SSD nuke program written in python.
 
 by AJBlondell
 
-=======================================================================================
-                 _       _______ _______ _             _               _       _______ 
-|\     /|\     /( \     (  ____ (  ___  | (    /|     ( (    /|\     /| \    /(  ____ \
-| )   ( | )   ( | (     | (    \/ (   ) |  \  ( |     |  \  ( | )   ( |  \  / / (    \/
-| |   | | |   | | |     | |     | (___) |   \ | |_____|   \ | | |   | |  (_/ /| (__    
-( (   ) ) |   | | |     | |     |  ___  | (\ \) (_____) (\ \) | |   | |   _ ( |  __)   
- \ \_/ /| |   | | |     | |     | (   ) | | \   |     | | \   | |   | |  ( \ \| (      
-  \   / | (___) | (____/\ (____/\ )   ( | )  \  |     | )  \  | (___) |  /  \ \ (____/\
-   \_/  (_______|_______(_______//     \|/    )_)     |/    )_|_______)_/    \(_______/
+-----
+VULCAN-Nuke
+-----
 
-=======================================================================================
-
-
-Vulcan uses the linux modules, cryptsetup and shred to encrypt and wipe solid-state 
+VULCAN uses the linux modules, cryptsetup and shred to encrypt and wipe solid-state 
 storage volumes. So far it has only been tested on ubuntu based distros, but eventually 
 I would like to make it crossplatform(MacOS/Windows/Linux).
 
