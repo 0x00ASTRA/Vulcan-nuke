@@ -18,5 +18,5 @@ To use:
   
   3) open a superuser terminal in the Vulcan-nuke directory.
   
-  4) run the 'test.py' file and input how number of passes you would like to wipe the 
-     drives with into the terminal.
+  4) run the 'main.py' file and input the number of passes, you would like to wipe the 
+     drives with, into the terminal.
