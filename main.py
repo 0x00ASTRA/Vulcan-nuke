@@ -65,7 +65,7 @@ class Shred:
                 print('Input not recognized')
         
         if abort == True:
-            Print('Nuke aborted')
+            print('Nuke aborted')
         
         if proceed == True:
             self.encrypt()
