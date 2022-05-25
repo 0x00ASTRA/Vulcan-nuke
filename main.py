@@ -1,9 +1,11 @@
-#!/usr/bin/bash python3
+#!/usr/bin/python3
 import subprocess
 import secrets
 import multiprocessing
+import threading
 import json
-
+import time
+import datetime
 
 class Shred:
     wipe_list = []
@@ -14,100 +16,114 @@ class Shred:
         with open('drives.json','w') as wf:
             wf.writelines(output.stdout)
             wf.close()
-        
+
         with open('drives.json') as f:
             disks = json.load(f)
-       
+
         for disk in disks:
-            disk_name = disk['logicalname']
-            disk_serial = disk['serial']
-            disk_size = str(int(disk['size']/1000000000)) + 'GB'
-            disk_vendor = disk['vendor']
-            self.wipe_list.append(disk_name)
-            print(
-                'Wiping Disk: ' + 
-                f'{disk_name}' 
-                + ' | ' + 
-                f'{disk_vendor}' 
-                + ' | ' + 
-                f'Size: {disk_size}' 
-                + ' | ' + 
-                f'SN: {disk_serial}\n'
+            try:
+                disk_name = disk['logicalname']
+            except:
+                disk_name = 'Unknown'
+
+            try:
+                disk_serial = disk['serial']
+            except:
+                disk_serial = 'Unknown'
+
+            try:
+                disk_size = str(int(disk['size']/1000000000)) + 'GB'
+            except:
+                disk_size = 'Unknown'
+
+            try:
+                disk_vendor = disk['vendor']
+            except:
+                disk_vendor = 'Unknown'
+
+            #for dn in range(len(self.wipe_list)):
+                #if self.wipe_list[dn] == disk_name:
+                  #  print("Error: Duplicate path")
+                 #   break
+                #else:
+            if int(disk['size']/1000000000) < 126:
+                break
+            else:
+                self.wipe_list.append(disk_name)
+                print(
+                    'Wiping Disk: ' + 
+                    f'{disk_name}'
+                    + ' | ' + 
+                    f'{disk_vendor}' 
+                    + ' | ' + 
+                    f'Size: {disk_size}' 
+                    + ' | ' + 
+                    f'SN: {disk_serial}\n'
                 )
-        
+
         inp = input('Would you like to continue?(Y/n): \n')
         proceed = False
         abort = False
         trig = False
 
         while trig == False:
-            if inp == 'y':
-                print('Proceeding to encrption phase...')
-                proceed = True
-                trig = True
-            
-            elif inp == 'Y':
+            if inp.lower() == 'y':
                 print('Proceeding to encrption phase...')
                 proceed = True
                 trig = True
 
-            elif inp == 'n':
-                print('Aborting Nuke...')
-                abort = True
-                trig = True
-            
-            elif inp == 'N':
+            elif inp.lower() == 'n':
                 print('Aborting Nuke...')
                 abort = True
                 trig = True
 
             else:
                 print('Input not recognized')
-        
+
         if abort == True:
             print('Nuke aborted')
-        
+
         if proceed == True:
             self.encrypt()
-        
+
     def encrypt(self):
 
-        for i in range(len(self.wipe_list)):
+        def do_thing():
+            cmd = [
+                'cryptsetup', 'luksFormat', '--type', 'luks1', f'{self.wipe_list[i]}'
+            ]
+            passwd = secrets.token_bytes(32)
 
-            def do_thing():
-
-                cmd = [
-                    'cryptsetup', 'luksFormat', '--type', 'luks1', f'{self.wipe_list[i]}'
-                ]
-                passwd = secrets.token_bytes(32)         
-
-                subprocess.run(cmd, input=passwd)
-                print(f'Encrypting volume: {self.wipe_list[i]}\n')
-
+            subprocess.run(cmd, input=passwd)
+            print(f'Encrypting volume: {self.wipe_list[i]}\n')        
+        for i in range(len(self.wipe_list)): 
             p1 = multiprocessing.Process(target=do_thing)
             p1.start()
-    
-        for _ in range(len(self.wipe_list)):
+            
+        for l in range(len(self.wipe_list)):    
             p1.join()
-        
+            
         self.shred(self.passes)
 
     def shred(self, passes):
-        for i in range(len(self.wipe_list)):
-
-            def do_shred():
-                disk = self.wipe_list[i]
-                proc = subprocess.run(['shred', '-z', '-v', '-u', '-n', f'{passes}', f'{disk}'])
-                # with open(f'{disk}-shredlog.txt', 'w') as f:
-                #     f.writelines(proc.stdout)
-                return proc
-
-            p1 = multiprocessing.Process(target=do_shred)
+        def cmd():
+            subprocess.run(['shred', '-z', '-v', '-u', '-n', f'{passes}', f'{disk}'])
+        procs = []  
+        for disk in self.wipe_list:
+            print('Process started for: ' +  f'{disk}')
+            p1 = multiprocessing.Process(target=cmd)
+            procs.append(p1)
             p1.start()
-            
-        for _ in range(len(self.wipe_list)):
-            p1.join()
-    
+
+        time.sleep(2)
+        
+        print(procs)
+        for proc in procs:
+            proc.join(timeout=0)
+            while proc.is_alive() != None:
+                time.sleep(0)
+            print('completed ' + wipe_list[proc] + "@" + datetime.datetime())
+
     def __init__(self):
         self.passes = input('How many passes would you like to make? \n')
         self.get_drives()
