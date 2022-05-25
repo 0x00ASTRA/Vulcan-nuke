@@ -2,7 +2,6 @@
 import subprocess
 import secrets
 import multiprocessing
-import threading
 import json
 import time
 import datetime
@@ -122,7 +121,7 @@ class Shred:
             proc.join(timeout=0)
             while proc.is_alive() != None:
                 time.sleep(0)
-            print('completed ' + wipe_list[proc] + "@" + datetime.datetime())
+            print('completed ' + self.wipe_list[proc] + "@" + datetime.datetime())
 
     def __init__(self):
         self.passes = input('How many passes would you like to make? \n')
