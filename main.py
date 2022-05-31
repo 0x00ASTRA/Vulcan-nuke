@@ -1,131 +1,31 @@
-#!/usr/bin/python3
-import subprocess
-import secrets
-import multiprocessing
-import json
-import time
-import datetime
+import disk
+import encrypt
+# import rw
+import verify
 
-class Shred:
-    wipe_list = []
+dl = disk.get_drives()
+wipe_list = []
 
-    def get_drives(self):
-        cmd = ['lshw', '-c', 'disk', '-json']
-        output = subprocess.run(cmd, capture_output=True, text=True)
-        with open('drives.json','w') as wf:
-            wf.writelines(output.stdout)
-            wf.close()
-
-        with open('drives.json') as f:
-            disks = json.load(f)
-
-        for disk in disks:
-            try:
-                disk_name = disk['logicalname']
-            except:
-                disk_name = 'Unknown'
-
-            try:
-                disk_serial = disk['serial']
-            except:
-                disk_serial = 'Unknown'
-
-            try:
-                disk_size = str(int(disk['size']/1000000000)) + 'GB'
-            except:
-                disk_size = 'Unknown'
-
-            try:
-                disk_vendor = disk['vendor']
-            except:
-                disk_vendor = 'Unknown'
-
-            #for dn in range(len(self.wipe_list)):
-                #if self.wipe_list[dn] == disk_name:
-                  #  print("Error: Duplicate path")
-                 #   break
-                #else:
-            if int(disk['size']/1000000000) < 126:
-                break
-            else:
-                self.wipe_list.append(disk_name)
-                print(
-                    'Wiping Disk: ' + 
-                    f'{disk_name}'
-                    + ' | ' + 
-                    f'{disk_vendor}' 
-                    + ' | ' + 
-                    f'Size: {disk_size}' 
-                    + ' | ' + 
-                    f'SN: {disk_serial}\n'
-                )
-
-        inp = input('Would you like to continue?(Y/n): \n')
-        proceed = False
-        abort = False
-        trig = False
-
-        while trig == False:
-            if inp.lower() == 'y':
-                print('Proceeding to encrption phase...')
-                proceed = True
-                trig = True
-
-            elif inp.lower() == 'n':
-                print('Aborting Nuke...')
-                abort = True
-                trig = True
-
-            else:
-                print('Input not recognized')
-
-        if abort == True:
-            print('Nuke aborted')
-
-        if proceed == True:
-            self.encrypt()
-
-    def encrypt(self):
-
-        def do_thing():
-            cmd = [
-                'cryptsetup', 'luksFormat', '--type', 'luks1', f'{self.wipe_list[i]}'
-            ]
-            passwd = secrets.token_bytes(32)
-
-            subprocess.run(cmd, input=passwd)
-            print(f'Encrypting volume: {self.wipe_list[i]}\n')        
-        for i in range(len(self.wipe_list)): 
-            p1 = multiprocessing.Process(target=do_thing)
-            p1.start()
-            
-        for l in range(len(self.wipe_list)):    
-            p1.join()
-            
-        self.shred(self.passes)
-
-    def shred(self, passes):
-        def cmd():
-            subprocess.run(['shred', '-z', '-v', '-u', '-n', f'{passes}', f'{disk}'])
-        procs = []  
-        for disk in self.wipe_list:
-            print('Process started for: ' +  f'{disk}')
-            p1 = multiprocessing.Process(target=cmd)
-            procs.append(p1)
-            p1.start()
-
-        time.sleep(2)
-        
-        print(procs)
-        for proc in procs:
-            proc.join(timeout=0)
-            while proc.is_alive() != None:
-                time.sleep(0)
-            print('completed ' + self.wipe_list[proc] + "@" + datetime.datetime())
-
-    def __init__(self):
-        self.passes = input('How many passes would you like to make? \n')
-        self.get_drives()
+def print_wipe(name,vendor,size,serial):
+    print(
+        'Wiping Disk: ' + 
+        f'{name}'
+        + ' | ' + 
+        f'{vendor}' 
+        + ' | ' + 
+        f'Size: {size}' 
+        + ' | ' + 
+        f'SN: {serial}\n'
+    )  
 
 if __name__ == '__main__':
-    Shred()
+    for drive in dl:
+        print_wipe(drive['name'], drive['vendor'], drive['size'], drive['serial'])
+        if verify.v_loop():
+            encrypt(drive['name'])
+            
+        elif not verify.v_loop:
+            print('Nuke Aborted\n')
+        else:
+            print('Error: loop value set to null')
+    
