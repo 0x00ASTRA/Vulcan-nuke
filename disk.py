@@ -45,9 +45,15 @@ def get_drives():
             disk_serial = 'Unknown'
 
         try:
-            disk_size = str(int(disk['size']/1000000000)) + 'GB'
+            disk_size_gb = str(int(disk['size']/1000000000)) + 'GB'
         except:
-            disk_size = 'Unknown'
+            disk_size_gb = 'Unknown'
+        
+        try:
+            disk_size_bytes = str(int(disk['size'])) + 'bytes'
+        except:
+            disk_size_bytes = 'Unknown'
+
 
         try:
             disk_vendor = disk['vendor']
@@ -58,7 +64,7 @@ def get_drives():
             wipe_list.append(disk_name)
             # d = Disk(disk_name, disk_vendor, disk_size, disk_serial)
             # d.print_wipe()
-            disk_dict = {'name': disk_name, 'vendor': disk_vendor, 'size' : disk_size, 'serial' : disk_serial}
+            disk_dict = {'name': disk_name, 'vendor': disk_vendor, 'size_bytes' : disk_size_bytes, 'size_gb' : disk_size_gb, 'serial' : disk_serial}
             disk_list.append(disk_dict)
             
 
