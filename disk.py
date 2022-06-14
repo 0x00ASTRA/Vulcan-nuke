@@ -50,7 +50,7 @@ def get_drives():
             disk_size_gb = 'Unknown'
         
         try:
-            disk_size_bytes = str(int(disk['size'])) + 'bytes'
+            disk_size_bytes = (disk['size'])
         except:
             disk_size_bytes = 'Unknown'
 

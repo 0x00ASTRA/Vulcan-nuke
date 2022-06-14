@@ -2,7 +2,7 @@ import secrets
 import subprocess
 import multiprocessing
 
-def encrypt(drive_path):
+def encrypt_drive(drive_path):
 
     cmd = [
         'cryptsetup', 'luksFormat', '--type', 'luks1', f'{drive_path}'

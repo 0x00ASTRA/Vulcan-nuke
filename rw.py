@@ -1,30 +1,36 @@
 # read and write data to a disk
+from audioop import mul
 import datetime
+import multiprocessing
 from itertools import count
 
 class ReadWrite:
-    def __init__(self, path, size, write_zeros):
+    def __init__(self, path, size): #write_zeros):
         self.path = path
         self.size = size
-        self.write_zeros = write_zeros
+        # self.write_zeros = write_zeros
         self.start_time = datetime.datetime.now()
         self.itr = count()
+        # self.rproc = multiprocessing.Process(self.read_bytes)
+        # self.wproc = multiprocessing.Process(self.write_bytes)
 
-    def read_bytes(self, filepath, bytes):
+    def read_bytes(self):
         with open(f'{self.path}', 'rb') as f:
-            try:
-                block = f.read(512)
-            except:
-                block = 'Error Reading Block'
+            for _ in range(self.size):
+                try:
+                    block = f.read(512)
+                except:
+                    block = 'Error Reading Block'
         return block
 
-    def write_bytes(self, filespath, bytes):
+    def write_bytes(self):
         with open(f'{self.path}', 'wb') as w:
-            try:
-                wr_block = w.write(b'\0')
-            except:
-                wr_block = 'Error Writing Block'
-        return wr_block
+            for _ in range(self.size):
+                try:
+                    wr_block = w.write(b'\0')
+                except:
+                    wr_block = 'Error Writing Block'
+            return wr_block
     
     def process_completed_at(self):
         self.end_time = datetime.datetime.now()
