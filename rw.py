@@ -1,5 +1,4 @@
 # read and write data to a disk
-from audioop import mul
 import datetime
 import multiprocessing
 from itertools import count
