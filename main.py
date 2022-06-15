@@ -2,12 +2,11 @@
 import subprocess
 import secrets
 import multiprocessing
-import threading
 import json
 import time
 import datetime
 
-class Shred:
+class Nuke:
     wipe_list = []
 
     def get_drives(self):
@@ -41,25 +40,20 @@ class Shred:
             except:
                 disk_vendor = 'Unknown'
 
-            #for dn in range(len(self.wipe_list)):
-                #if self.wipe_list[dn] == disk_name:
-                  #  print("Error: Duplicate path")
-                 #   break
-                #else:
-            if int(disk['size']/1000000000) < 126:
-                break
-            else:
-                self.wipe_list.append(disk_name)
-                print(
-                    'Wiping Disk: ' + 
-                    f'{disk_name}'
-                    + ' | ' + 
-                    f'{disk_vendor}' 
-                    + ' | ' + 
-                    f'Size: {disk_size}' 
-                    + ' | ' + 
-                    f'SN: {disk_serial}\n'
-                )
+            # if int(disk['size']/1000000000) < 126:
+            #     break
+            # else:
+            self.wipe_list.append(disk_name)
+            print(
+                'Wiping Disk: ' + 
+                f'{disk_name}'
+                + ' | ' + 
+                f'{disk_vendor}' 
+                + ' | ' + 
+                f'Size: {disk_size}' 
+                + ' | ' + 
+                f'SN: {disk_serial}\n'
+            )
 
         inp = input('Would you like to continue?(Y/n): \n')
         proceed = False
@@ -88,7 +82,7 @@ class Shred:
 
     def encrypt(self):
 
-        def do_thing():
+        def do_encrypt():
             cmd = [
                 'cryptsetup', 'luksFormat', '--type', 'luks1', f'{self.wipe_list[i]}'
             ]
@@ -97,10 +91,10 @@ class Shred:
             subprocess.run(cmd, input=passwd)
             print(f'Encrypting volume: {self.wipe_list[i]}\n')        
         for i in range(len(self.wipe_list)): 
-            p1 = multiprocessing.Process(target=do_thing)
+            p1 = multiprocessing.Process(target=do_encrypt)
             p1.start()
             
-        for l in range(len(self.wipe_list)):    
+        for _ in range(len(self.wipe_list)):    
             p1.join()
             
         self.shred(self.passes)
@@ -122,11 +116,15 @@ class Shred:
             proc.join(timeout=0)
             while proc.is_alive() != None:
                 time.sleep(0)
-            print('completed ' + wipe_list[proc] + "@" + datetime.datetime())
+            print('completed ' + self.wipe_list[proc] + "@" + datetime.datetime())
 
     def __init__(self):
         self.passes = input('How many passes would you like to make? \n')
         self.get_drives()
 
 if __name__ == '__main__':
-    Shred()
+    print('==============================================================================================')
+    print('** Warning: This Program will cause irreversable destruction to the data of disks attached. **')
+    print('==============================================================================================')
+    print('')
+    Nuke()
