@@ -117,14 +117,13 @@ class Nuke:
             while proc.is_alive() != None:
                 time.sleep(0)
             print('completed ' + self.wipe_list[proc] + "@" + datetime.datetime())
+        self.check_drive()
     
 
     def check_drive(self):
         command = ['badblocks','-sv', '-t', '0x00', f'{self.wipe_list[i]}']
         for i in self.wipe_list:
             subprocess.run(command)
-    
-    check_drive()
 
     def __init__(self):
         self.passes = input('How many passes would you like to make? \n')
